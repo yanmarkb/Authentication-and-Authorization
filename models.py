@@ -35,19 +35,24 @@ class User(db.Model):  # Define a User class that represents a table in the data
         # return instance of user with username and hashed password
         return cls(username=username, password=hashed_utf8, email=email, first_name=first_name, last_name=last_name)
 
+    from flask_bcrypt import Bcrypt  # Import the Bcrypt module for password hashing.
+    from flask import session  # Import the session object from the flask module.
+
+    bcrypt = Bcrypt()  # Create an instance of the Bcrypt class.
+
     @classmethod
     def authenticate(cls, username, password):
-        user = User.query.filter_by(username=username).first()
+            user = User.query.filter_by(username=username).first()
 
-        if user and bcrypt.check_password_hash(user.password, password):
-            return user
-        else:
-            return False
+            if user and bcrypt.check_password_hash(user.password, password):  # Check if the user exists and the provided password matches the hashed password.
+                return user  # Return the user object if authentication is successful.
+            else:
+                return False  # Return False if authentication fails.
 
     @classmethod
     def logout(cls):
-        """Clear the session to log out the user."""
-        session.clear()
+            """Clear the session to log out the user."""
+            session.clear()  # Clear the session to log out the user.
 
 class Feedback(db.Model):  # Define a Feedback class that represents a table in the database.
     __tablename__ = 'feedback'  # Set the table name to 'feedback'.
