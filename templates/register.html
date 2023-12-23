@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Register</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="form-control-label") }}
+            {{ form.username(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-control-label") }}
+            {{ form.password(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label(class="form-control-label") }}
+            {{ form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.first_name.label(class="form-control-label") }}
+            {{ form.first_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.last_name.label(class="form-control-label") }}
+            {{ form.last_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Register" class="btn btn-primary">
+        </div>
+    </form>
+    <h2 class="my-4">Already have an account?</h2>
+    <form action="/login">
+        <input type="submit" value="Log In" class="btn btn-secondary">
+    </form>
+</div>
+{% endblock %}

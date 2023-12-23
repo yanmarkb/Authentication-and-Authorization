@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p>Email: {{ user.email }}</p>
+    <p>First Name: {{ user.first_name }}</p>
+    <p>Last Name: {{ user.last_name }}</p>
+
+    <h2>Your Feedback</h2>
+    {% for feedback in feedbacks %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h3 class="card-title">{{ feedback.title }}</h3>
+                <p class="card-text">{{ feedback.content }}</p>
+                <a href="/feedback/{{ feedback.id }}/update" class="btn btn-primary">Edit</a>
+                <form method="POST" action="/feedback/{{ feedback.id }}/delete" class="d-inline">
+                    <input type="submit" value="Delete" class="btn btn-danger">
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+
+    <a href="/users/{{ user.username }}/feedback/add" class="btn btn-success mb-3">Add Feedback</a>
+    <form method="POST" action="/users/{{ user.username }}/delete" class="mb-3">
+        <input type="submit" value="Delete User" class="btn btn-danger">
+    </form>
+
+    <form action="/logout" class="mb-3">
+        <input type="submit" value="Log Out" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
