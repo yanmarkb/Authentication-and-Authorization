@@ -96,18 +96,18 @@ def user_page(username):
     return render_template('user.html', user=user, feedbacks=feedbacks)  
 
 # Define delete user route
-@app.route('/users/<username>/delete', methods=['POST'])
-def delete_user(username):
-    # Check if the user is logged in and the username matches the session
-    if 'username' not in session or session['username'] != username: 
-        # Redirect to the login page
-        return redirect('/login')
-    # Delete the user from the database
-    User.query.filter_by(username=username).delete()
-    db.session.commit()
-    # Clear the session and redirect to the home page
-    session.clear()
-    return redirect('/')
+# @app.route('/users/<username>/delete', methods=['POST'])
+# def delete_user(username):
+#     # Check if the user is logged in and the username matches the session
+#     if 'username' not in session or session['username'] != username: 
+#         # Redirect to the login page
+#         return redirect('/login')
+#     # Delete the user from the database
+#     User.query.filter_by(username=username).delete()
+#     db.session.commit()
+#     # Clear the session and redirect to the home page
+#     session.clear()
+#     return redirect('/')
 
 # Define add feedback route
 @app.route('/users/<username>/feedback/add', methods=['GET', 'POST'])
@@ -149,20 +149,35 @@ def update_feedback(feedback_id):
     # Render the feedback edit form template
     return render_template('feedback_edit.html', form=form, feedback=feedback)
 
-# Define delete feedback route
-@app.route('/feedback/<int:feedback_id>/delete', methods=['POST'])
-def delete_feedback(feedback_id):
-    # Get the feedback by its ID or return a 404 error if not found
-    feedback = Feedback.query.get_or_404(feedback_id)
-    # Check if the user is logged in and the username matches the session
-    if 'username' not in session or session['username'] != feedback.username: 
-        # Redirect to the login page
+@app.route('/feedback/<int:id>/delete', methods=['POST'])
+def delete_feedback(id):
+    """Delete feedback."""
+
+    feedback = Feedback.query.get_or_404(id)
+    if "username" not in session or feedback.username != session['username']:
+        flash("You must be logged in to do that.", "danger")
         return redirect('/login')
-    # Delete the feedback from the database
+
     db.session.delete(feedback)
     db.session.commit()
-    # Redirect to the user's page
-    return redirect(f'/users/{feedback.username}')
+
+    return redirect(f"/users/{feedback.username}")
+
+# Define delete feedback route
+@app.route('/users/<username>/delete', methods=['POST'])
+def delete_user_account(username):  # Rename the function to delete_user_account
+    if "username" not in session or username != session['username']:
+        flash("You must be logged in to do that.", "danger")
+        return redirect('/login')
+
+    feedback = Feedback.query.filter_by(username=username).delete()  # Delete the user's feedback
+    user = User.query.filter_by(username=username).delete()  # Delete the user
+
+    db.session.commit()
+
+    session.pop('username')
+
+    return redirect('/login')
 
 # Define logout route
 @app.route('/logout')
