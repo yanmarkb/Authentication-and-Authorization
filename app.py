@@ -1,6 +1,6 @@
 
 # Import necessary modules and packages
-from flask import Flask, render_template, redirect, session, flash
+from flask import Flask, render_template, redirect, session, flash, request 
 from forms import RegisterForm, LoginForm, FeedbackForm
 from models import db, User, Feedback
 from flask_sqlalchemy import SQLAlchemy
@@ -40,42 +40,46 @@ def home():
 # Define registration route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Create an instance of the registration form
     form = RegisterForm()
     if form.validate_on_submit():
-        # Hash the password and create a new user
-        hashed_password = User.hash_password(form.password.data)
-        user = User(
-            username=form.username.data, 
-            password=hashed_password,
-            email=form.email.data,
-            first_name=form.first_name.data,
-            last_name=form.last_name.data 
-        )
-        # Add the user to the database and commit the changes
-        db.session.add(user)
-        db.session.commit()
-        # Store the username in the session and redirect to the user's page
-        session['username'] = user.username
-        return redirect('/users/' + user.username)  
-    # Render the registration form template
+        username = form.username.data
+        password = form.password.data
+        email = form.email.data
+        first_name = form.first_name.data  # Get the first_name from the form data
+        last_name = form.last_name.data  # Get the last_name from the form data
+
+        user = User.register(username, password, email, first_name, last_name)  # Include the first_name and last_name arguments
+        if user:
+            db.session.add(user)
+            db.session.commit()
+
+            session['username'] = user.username
+            flash('Welcome! Successfully Created Your Account!')
+            return redirect(f"/users/{user.username}")
+        else:
+            flash('Username already exists. Please choose a different one.')
+            return render_template('register.html', form=form)
+
     return render_template('register.html', form=form)
 
 # Define login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Create an instance of the login form
     form = LoginForm()
     if form.validate_on_submit():
-        # Check if the username and password are correct
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and User.check_password(user.password, form.password.data):
-            # Store the username in the session and redirect to the user's page
+        username = form.username.data
+        password = form.password.data
+
+        user = User.authenticate(username, password)
+
+        if user:
             session['username'] = user.username
-            return redirect('/users/' + user.username)
-        # Display an error message if the username or password is incorrect
-        flash('Wrong username or password')
-    # Render the login form template
+            flash('Welcome Back!')
+            return redirect(f"/users/{user.username}")
+        else:
+            flash("Invalid username/password.")
+            return render_template('login.html', form=form)
+
     return render_template('login.html', form=form)
 
 # Define user page route
@@ -163,10 +167,6 @@ def delete_feedback(feedback_id):
 # Define logout route
 @app.route('/logout')
 def logout():
-    """Clear any information from the session and redirect to /"""
-    # Clear the session and display a flash message
-    session.clear()
-    flash("See you later!")
-    # Redirect to the home page
+    User.logout()
+    flash("You have successfully logged out. See you later!")
     return redirect('/')
-

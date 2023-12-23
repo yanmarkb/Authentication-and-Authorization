@@ -1,7 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy  # Import the SQLAlchemy module for working with databases.
 from flask_bcrypt import Bcrypt  # Import the Bcrypt module for password hashing.
+import bcrypt
+from flask import session
 
 db = SQLAlchemy()  # Create an instance of the SQLAlchemy class.
+
+bcrypt = Bcrypt()  # Create an instance of the Bcrypt class.
 
 class User(db.Model):  # Define a User class that represents a table in the database.
     __tablename__ = 'users'  # Set the table name to 'users'.
@@ -23,12 +27,27 @@ class User(db.Model):  # Define a User class that represents a table in the data
         return bcrypt.check_password_hash(hashed_password, password)  # Check if the provided password matches the hashed password and return a boolean value.
 
     @classmethod
-    def authenticate(cls, username, password):  # Define a class method 'authenticate' that takes a username and a password as input.
-        user = cls.query.filter_by(username=username).first()  # Query the database for a user with the provided username.
-        if user and cls.check_password(user.password, password):  # If a user is found and the provided password matches the user's hashed password:
-            return user  # Return the user object.
+    def register(cls, username, password, email, first_name, last_name):
+        hashed = bcrypt.generate_password_hash(password)
+        # turn bytestring into normal (unicode utf8) string
+        hashed_utf8 = hashed.decode("utf8")
+
+        # return instance of user with username and hashed password
+        return cls(username=username, password=hashed_utf8, email=email, first_name=first_name, last_name=last_name)
+
+    @classmethod
+    def authenticate(cls, username, password):
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            return user
         else:
-            return False  # Otherwise, return False.
+            return False
+
+    @classmethod
+    def logout(cls):
+        """Clear the session to log out the user."""
+        session.clear()
 
 class Feedback(db.Model):  # Define a Feedback class that represents a table in the database.
     __tablename__ = 'feedback'  # Set the table name to 'feedback'.
