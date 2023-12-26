@@ -211,5 +211,5 @@ def delete_user_account(username):  # Rename the function to delete_user_account
 @app.route('/logout')
 def logout():
     User.logout()
-    flash("You have successfully logged out. See you later!")
+    flash("You have successfully logged out. See you later!", "success")
     return redirect('/')

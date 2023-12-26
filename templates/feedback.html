@@ -11,6 +11,12 @@
                     <h5 class="card-title">{{ feedback.title }}</h5>
                     <p class="card-text">{{ feedback.content }}</p>
                     <p class="card-text"><small class="text-muted">By {{ feedback.username }}</small></p>
+                    {% if session['username'] == feedback.username %}
+                        <!-- If the logged-in user is the creator of the feedback, display the delete button -->
+                        <form action="{{ url_for('delete_feedback', id=feedback.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
